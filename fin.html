@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviation Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Light gray background */
+        }
+        /* Custom scrollbar for chat messages */
+        .chat-messages-container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-messages-container::-webkit-scrollbar-track {
+            background: #e0e0e0;
+            border-radius: 10px;
+        }
+        .chat-messages-container::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        .chat-messages-container::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl h-[80vh] flex flex-col overflow-hidden">
+        <div class="bg-gradient-to-r from-gray-700 to-gray-900 text-white p-4 text-center text-xl font-bold rounded-t-xl shadow-md">
+            Aviation Chatbot
+        </div>
+
+        <div id="messagesContainer" class="flex-1 p-6 overflow-y-auto space-y-4 chat-messages-container">
+            <div class="flex justify-start">
+                <div class="max-w-[70%] p-3 rounded-lg shadow-sm bg-gray-200 text-gray-800 rounded-bl-none">
+                    Hello! I am your Aviation Assistant. How can I help you today? You can ask me about: **Types of Aircraft, Major Airlines, Flight Information, Airport Operations, Aviation Careers, Aircraft Maintenance, Air Traffic Control, or Aviation History.**
+                </div>
+            </div>
+        </div>
+
+        <div class="p-4 border-t border-gray-200 flex items-center bg-gray-50 rounded-b-xl">
+            <input
+                type="text"
+                id="userInput"
+                class="flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200"
+                placeholder="Type your question..."
+            />
+            <button
+                id="sendButton"
+                class="ml-3 px-6 py-3 bg-gray-700 text-white rounded-lg shadow-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-all duration-200 active:scale-95"
+            >
+                Send
+            </button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const userInput = document.getElementById('userInput');
+            const sendButton = document.getElementById('sendButton');
+
+            // Predefined questions and answers for Aviation
+            const aviationQueries = [
+                {
+                    keywords: ['types of aircraft', 'kinds of planes', 'different aircraft models'],
+                    answer: 'There are many types of aircraft, including commercial airliners like the Boeing 747 and Airbus A320, cargo planes, military aircraft, private jets, helicopters, and general aviation aircraft.'
+                },
+                {
+                    keywords: ['major airlines', 'biggest airlines', 'top airlines', 'which airlines'],
+                    answer: 'Some of the major airlines globally include American Airlines, Delta Air Lines, United Airlines, Emirates, Qatar Airways, Lufthansa, British Airways, and Air France.'
+                },
+                {
+                    keywords: ['flight information', 'check flight status', 'flight delays', 'arrival departure'],
+                    answer: 'For flight information, please use a flight tracking website and provide the flight number or the departure and arrival airports and dates.'
+                },
+                {
+                    keywords: ['airport operations', 'how airports work', 'airport management'],
+                    answer: 'Airport operations involve a complex coordination of air traffic control, ground handling, passenger services, security, maintenance, and logistics to ensure safe and efficient aircraft movement.'
+                },
+                {
+                    keywords: ['aviation careers', 'jobs in aviation', 'work in aviation'],
+                    answer: 'The aviation industry offers diverse careers such as pilots, flight attendants, air traffic controllers, aircraft mechanics, aerospace engineers, ground staff, and airport management.'
+                },
+                {
+                    keywords: ['aircraft maintenance', 'plane repair', 'how aircraft are maintained'],
+                    answer: 'Aircraft maintenance involves regular inspections, repairs, and overhauls to ensure safety and airworthiness. This includes line maintenance (daily checks), base maintenance (major overhauls), and component maintenance.'
+                },
+                {
+                    keywords: ['air traffic control', 'what is ATC', 'how ATC works'],
+                    answer: 'Air Traffic Control (ATC) manages aircraft movements in the air and on the ground to prevent collisions, organize and expedite the flow of air traffic, and provide information for pilots. It is crucial for air safety.'
+                },
+                {
+                    keywords: ['aviation history', 'history of flight', 'when was flight invented'],
+                    answer: 'Aviation history dates back to early experiments with gliders, followed by the Wright brothers\' first successful powered flight in 1903, leading to rapid advancements in aircraft technology and commercial aviation.'
+                },
+                {
+                    keywords: ['famous aircraft', 'iconic planes', 'well-known planes'],
+                    answer: 'Some famous aircraft include the Boeing 747 (Jumbo Jet), Concorde (supersonic transport), Airbus A380 (double-deck wide-body), and historical planes like the Spirit of St. Louis.'
+                },
+                {
+                    keywords: ['aircraft manufacturers', 'who makes planes', 'plane companies'],
+                    answer: 'The primary commercial aircraft manufacturers are Boeing (USA) and Airbus (Europe). Other notable manufacturers include Embraer (Brazil), Bombardier (Canada), and COMAC (China).'
+                }
+            ];
+
+            // Function to add a message to the chat display
+            function addMessage(text, type) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `flex ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+
+                const bubbleDiv = document.createElement('div');
+                bubbleDiv.className = `max-w-[70%] p-3 rounded-lg shadow-sm ${
+                    type === 'user'
+                        ? 'bg-gray-600 text-white rounded-br-none'
+                        : 'bg-gray-200 text-gray-800 rounded-bl-none'
+                }`;
+                bubbleDiv.innerHTML = text; // Use innerHTML to allow for bold text
+
+                messageDiv.appendChild(bubbleDiv);
+                messagesContainer.appendChild(messageDiv);
+
+                // Auto-scroll to the bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            // Function to handle sending messages
+            function sendMessage() {
+                const userText = userInput.value.trim();
+                if (userText === '') return;
+
+                addMessage(userText, 'user');
+                userInput.value = ''; // Clear input
+
+                // Simulate bot typing delay
+                setTimeout(() => {
+                    let botResponse = "I'm sorry, I don't have information on that specific query. Please try asking about types of aircraft, major airlines, or aviation careers.";
+                    const lowerCaseUserText = userText.toLowerCase();
+
+                    // Check for predefined answers
+                    for (const query of aviationQueries) {
+                        if (query.keywords.some(keyword => lowerCaseUserText.includes(keyword))) {
+                            botResponse = query.answer;
+                            break;
+                        }
+                    }
+                    addMessage(botResponse, 'bot');
+                }, 500); // 0.5 second delay
+            }
+
+            // Event listeners
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
